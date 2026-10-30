@@ -175,7 +175,26 @@ function renderPicks() {
     b.innerHTML = '<span class="em">' + MOVES[m].emoji + '</span>' + m.toUpperCase() + '<kbd>' + (i + 1) + '</kbd>';
     box.appendChild(b);
   });
-  $('#rules').hidden = activeMoves().length !== 5;
+  renderRules();
+}
+
+// "✊ BEATS ✌️ 🦎" for every move, so the 5-move rules can be read at a glance
+function renderRules() {
+  const box = $('#rules');
+  box.replaceChildren();
+  box.hidden = activeMoves().length !== 5;
+  if (box.hidden) return;
+  const label = document.createElement('div');
+  label.className = 'rules-label';
+  label.textContent = 'WHO BEATS WHO';
+  box.appendChild(label);
+  activeMoves().forEach((m) => {
+    const chip = document.createElement('div');
+    chip.className = 'rule';
+    chip.innerHTML = '<b>' + MOVES[m].emoji + '</b><small>BEATS</small>' +
+      Object.keys(MOVES[m].beats).map((l) => MOVES[l].emoji).join(' ');
+    box.appendChild(chip);
+  });
 }
 
 function setVerb(text) { $('#verb').textContent = text; }
