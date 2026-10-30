@@ -83,20 +83,40 @@ const sfx = {
 };
 
 /* ---------- player names ---------- */
-const cleanName = (n) => String(n || '').toUpperCase().replace(/[^A-Z0-9 _\-!?.א-ת]/g, '').trim().slice(0, 10);
-let myName = cleanName(store.get('rps-name', ''));
+const cleanName = (n) => String(n || '').toUpperCase().replace(/[^A-Z0-9 _\-!?.א-ת]/g, '').trim().slice(0, 12);
+const NAME_A = ['NEON', 'PIXEL', 'TURBO', 'MEGA', 'HYPER', 'LASER', 'RETRO', 'COSMIC', 'ROBO', 'SUPER'];
+const NAME_B = ['FOX', 'CAT', 'NINJA', 'WOLF', 'BEE', 'OWL', 'TIGER', 'SHARK', 'BAT', 'YETI'];
+const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const randomName = () => cleanName(pickOne(NAME_A) + ' ' + pickOne(NAME_B));
+
+// Everyone gets a default arcade name until they type their own.
+let myName = cleanName(store.get('rps-name', '')) || randomName();
+store.set('rps-name', myName);
 let rivalName = '';
 
 function rivalLabel() {
   return state.mode === 'cpu' ? 'CPU' : rivalName || 'RIVAL';
 }
 
+function setTag(el, role, name) {
+  el.replaceChildren();
+  const r = document.createElement('div');
+  r.className = 'role';
+  r.textContent = '▼ ' + role;
+  el.appendChild(r);
+  if (name && name !== role) {
+    const n = document.createElement('div');
+    n.className = 'tag-name';
+    n.textContent = name;
+    el.appendChild(n);
+  }
+}
+
 function renderNames() {
-  const me = myName || 'YOU';
-  $('#n1').textContent = 'P1 ' + me;
+  $('#n1').textContent = 'P1 ' + myName;
   $('#n2').textContent = rivalLabel() + ' P2';
-  $('#t1').textContent = '▼ YOU';
-  $('#t2').textContent = '▼ ' + rivalLabel();
+  setTag($('#t1'), 'YOU', myName);
+  setTag($('#t2'), state.mode === 'cpu' ? 'CPU' : 'RIVAL', state.mode === 'cpu' ? '' : rivalLabel());
 }
 
 /* ---------- game state ---------- */
@@ -406,6 +426,7 @@ const net = {
   wire(conn) {
     this.conn = conn;
     conn.on('open', () => {
+      this.send({ t: 'name', name: myName });
       if (this.isHost) {
         this.resetRounds();
         this.send({ t: 'start', target: state.target, name: myName });
@@ -512,6 +533,10 @@ function inviteLink() {
 function status(text) { $('#online-status').textContent = text; }
 
 function resetLobby() {
+  $('#invite-msg').hidden = true;
+  $('#btn-host').hidden = false;
+  $('#or-sep').hidden = false;
+  $('#name-input').value = myName;
   $('#lobby-menu').hidden = false;
   $('#lobby-wait').hidden = true;
   status('');
@@ -542,8 +567,19 @@ $('#btn-target').addEventListener('click', () => {
 
 $('#name-input').value = myName;
 $('#name-input').addEventListener('input', (e) => {
-  myName = cleanName(e.target.value);
+  const typed = cleanName(e.target.value);
+  if (typed) { myName = typed; store.set('rps-name', myName); }
+});
+// An emptied field falls back to the last name instead of going nameless.
+$('#name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !$('#invite-msg').hidden) net.join($('#room-input').value);
+});
+$('#name-input').addEventListener('blur', (e) => { e.target.value = myName; });
+$('#btn-dice').addEventListener('click', () => {
+  myName = randomName();
   store.set('rps-name', myName);
+  $('#name-input').value = myName;
+  sfx.select();
 });
 
 $('#btn-host').addEventListener('click', () => { sfx.select(); net.host(); });
@@ -587,7 +623,14 @@ updateHiscore();
 
 const roomParam = new URLSearchParams(location.search).get('room');
 if (roomParam) {
+  // Invite link: let the guest pick a name first, then JOIN.
+  const code = roomParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
   show('online');
-  $('#room-input').value = roomParam.toUpperCase();
-  net.join(roomParam);
+  $('#room-input').value = code;
+  $('#invite-msg').textContent = "YOU'RE INVITED TO ROOM " + code + '! ENTER YOUR NAME AND PRESS JOIN';
+  $('#invite-msg').hidden = false;
+  $('#btn-host').hidden = true;
+  $('#or-sep').hidden = true;
+  $('#name-input').focus();
+  $('#name-input').select();
 }

@@ -45,10 +45,16 @@
     <!-- ONLINE LOBBY -->
     <section id="s-online" class="scene">
       <h2 class="title2">2P ONLINE</h2>
+      <p id="invite-msg" class="invite" hidden></p>
       <div id="lobby-menu" class="lobby-menu">
-        <input id="name-input" class="name-input" maxlength="10" placeholder="YOUR NAME" autocomplete="nickname" spellcheck="false" aria-label="Your name">
+        <label class="name-label" for="name-input">YOUR NAME</label>
+        <div class="join-row">
+          <input id="name-input" class="name-input" maxlength="12" placeholder="YOUR NAME" autocomplete="nickname" spellcheck="false">
+          <button id="btn-dice" class="small" aria-label="Random name" title="Random name">🎲</button>
+        </div>
+        <div class="lobby-sep"></div>
         <button id="btn-host">CREATE ROOM</button>
-        <div class="or">- OR -</div>
+        <div class="or" id="or-sep">- OR -</div>
         <div class="join-row">
           <input id="room-input" maxlength="5" placeholder="CODE" autocomplete="off" spellcheck="false" aria-label="Room code">
           <button id="btn-join">JOIN</button>

@@ -196,7 +196,10 @@ input {
 }
 input:focus { outline: none; box-shadow: 0 0 14px var(--yellow); }
 input::placeholder { color: #6b5c2a; }
-.name-input { width: 12em; font-size: 14px; letter-spacing: 2px; color: var(--cyan); border-color: var(--cyan); caret-color: var(--cyan); }
+.name-label { font-size: 10px; color: var(--cyan); margin-bottom: -8px; }
+.lobby-sep { height: 4px; width: 100%; max-width: 280px; background: repeating-linear-gradient(90deg, #4b3a8a 0 8px, transparent 8px 14px); }
+.invite { margin: 0; font-size: 11px; line-height: 1.8; color: var(--green); text-shadow: 0 0 10px var(--green); max-width: 520px; }
+.name-input { width: 10em; font-size: 14px; letter-spacing: 2px; color: var(--cyan); border-color: var(--cyan); caret-color: var(--cyan); }
 .name-input::placeholder { color: #1f6b70; }
 .code {
   font-size: clamp(32px, 10vw, 56px);
@@ -264,7 +267,7 @@ input::placeholder { color: #6b5c2a; }
 .fighter.lose { color: var(--red); filter: grayscale(.8) brightness(.55); }
 
 /* who is who */
-.slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.slot { position: relative; max-width: 40vw; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .tag {
   font-size: clamp(10px, 2.6vw, 14px);
   padding: 8px 10px;
@@ -275,6 +278,8 @@ input::placeholder { color: #6b5c2a; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.tag .role { font-size: .75em; opacity: .75; }
+.tag .tag-name { margin-top: 6px; overflow: hidden; text-overflow: ellipsis; }
 .slot-me .tag    { background: var(--cyan);  box-shadow: 3px 3px 0 #000, 0 0 14px var(--cyan); }
 .slot-rival .tag { background: var(--pink);  box-shadow: 3px 3px 0 #000, 0 0 14px var(--pink); }
 
