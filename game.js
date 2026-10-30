@@ -21,12 +21,41 @@ const store = {
 
 /* ---------- sound ---------- */
 let audio = null;
+let master = null;
 let muted = store.get('rps-muted', false);
 
-function beep(freq, dur = 0.08, type = 'square', vol = 0.05, when = 0) {
+// iOS: play through the silent switch (Safari 16.4+)
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* ignore */ }
+
+function getAudio() {
+  if (!audio) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audio = new AC();
+    master = audio.createGain();
+    master.gain.value = 0.8;
+    master.connect(audio.destination);
+  }
+  if (audio.state !== 'running') audio.resume().catch(() => {});
+  return audio;
+}
+
+// Browsers only allow audio to start inside a user gesture, so unlock on the first one.
+function unlockAudio() {
+  const ac = getAudio();
+  if (!ac) return;
+  const src = ac.createBufferSource();
+  src.buffer = ac.createBuffer(1, 1, 22050);
+  src.connect(ac.destination);
+  src.start(0);
+  if (ac.state === 'running') ['pointerdown', 'touchend', 'keydown'].forEach((ev) => document.removeEventListener(ev, unlockAudio, true));
+}
+['pointerdown', 'touchend', 'keydown'].forEach((ev) => document.addEventListener(ev, unlockAudio, true));
+
+function beep(freq, dur = 0.08, type = 'square', vol = 0.15, when = 0) {
   if (muted) return;
   try {
-    audio ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (!getAudio()) return;
     const t = audio.currentTime + when;
     const osc = audio.createOscillator();
     const gain = audio.createGain();
@@ -34,24 +63,41 @@ function beep(freq, dur = 0.08, type = 'square', vol = 0.05, when = 0) {
     osc.frequency.setValueAtTime(freq, t);
     gain.gain.setValueAtTime(vol, t);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    osc.connect(gain).connect(audio.destination);
+    osc.connect(gain).connect(master);
     osc.start(t);
     osc.stop(t + dur);
   } catch { /* no audio */ }
 }
 
 const sfx = {
-  select: () => beep(660, 0.06),
-  nav:    () => beep(330, 0.04),
-  tick:   () => beep(220, 0.1),
-  shoot:  () => { beep(880, 0.15); beep(1320, 0.15, 'square', 0.03, 0.05); },
-  point:  () => [523, 784].forEach((f, i) => beep(f, 0.1, 'square', 0.05, i * 0.08)),
-  miss:   () => [262, 196].forEach((f, i) => beep(f, 0.14, 'sawtooth', 0.04, i * 0.1)),
-  draw:   () => beep(440, 0.2, 'triangle', 0.06),
-  win:    () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => beep(f, 0.13, 'square', 0.05, i * 0.11)),
-  lose:   () => [392, 330, 262, 196, 131].forEach((f, i) => beep(f, 0.2, 'sawtooth', 0.04, i * 0.15)),
-  join:   () => [440, 554, 659].forEach((f, i) => beep(f, 0.08, 'square', 0.05, i * 0.07)),
+  select: () => beep(660, 0.07),
+  nav:    () => beep(330, 0.05),
+  tick:   () => beep(220, 0.12),
+  shoot:  () => { beep(880, 0.18); beep(1320, 0.18, 'square', 0.1, 0.05); },
+  point:  () => [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.12, 'square', 0.15, i * 0.08)),
+  miss:   () => [330, 262, 196].forEach((f, i) => beep(f, 0.16, 'sawtooth', 0.12, i * 0.1)),
+  draw:   () => beep(440, 0.25, 'triangle', 0.2),
+  win:    () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => beep(f, 0.13, 'square', 0.15, i * 0.11)),
+  lose:   () => [392, 330, 262, 196, 131].forEach((f, i) => beep(f, 0.2, 'sawtooth', 0.12, i * 0.15)),
+  join:   () => [440, 554, 659].forEach((f, i) => beep(f, 0.08, 'square', 0.15, i * 0.07)),
 };
+
+/* ---------- player names ---------- */
+const cleanName = (n) => String(n || '').toUpperCase().replace(/[^A-Z0-9 _\-!?.א-ת]/g, '').trim().slice(0, 10);
+let myName = cleanName(store.get('rps-name', ''));
+let rivalName = '';
+
+function rivalLabel() {
+  return state.mode === 'cpu' ? 'CPU' : rivalName || 'RIVAL';
+}
+
+function renderNames() {
+  const me = myName || 'YOU';
+  $('#n1').textContent = 'P1 ' + me;
+  $('#n2').textContent = rivalLabel() + ' P2';
+  $('#t1').textContent = '▼ YOU';
+  $('#t2').textContent = '▼ ' + rivalLabel();
+}
 
 /* ---------- game state ---------- */
 const state = {
@@ -84,6 +130,12 @@ function setFighter(el, content, cls = '') {
   el.innerHTML = '<span>' + content + '</span>';
 }
 
+function setStamp(i, text) {
+  const st = $('#st' + i);
+  st.className = 'stamp' + (text ? ' show ' + text.toLowerCase() : '');
+  st.textContent = text;
+}
+
 function renderPips() {
   [0, 1].forEach((i) => {
     const box = $('#pips' + (i + 1));
@@ -110,8 +162,7 @@ function startMatch(mode) {
   state.score = [0, 0];
   state.round = 1;
   state.over = false;
-  $('#n1').textContent = 'YOU';
-  $('#n2').textContent = mode === 'cpu' ? 'CPU' : 'RIVAL';
+  renderNames();
   show('game');
   newRound();
 }
@@ -122,6 +173,8 @@ function newRound() {
   renderPips();
   setFighter($('#f1'), '❔');
   setFighter($('#f2'), '❔');
+  setStamp(1, '');
+  setStamp(2, '');
   $('#picks').hidden = false;
   $('#endgame').hidden = true;
   $$('#picks button').forEach((b) => { b.disabled = false; b.classList.remove('chosen'); });
@@ -181,15 +234,16 @@ async function resolveRound(mine, theirs) {
   const outcome = mine === theirs ? 0 : MOVES[mine].beats === theirs ? 1 : -1;
   setFighter(f1, MOVES[mine].emoji, outcome === 1 ? 'win' : outcome === -1 ? 'lose' : '');
   setFighter(f2, MOVES[theirs].emoji, outcome === -1 ? 'win' : outcome === 1 ? 'lose' : '');
-  await sleep(500);
+  setStamp(1, outcome === 1 ? 'WIN' : outcome === -1 ? 'LOSE' : 'DRAW');
+  setStamp(2, outcome === -1 ? 'WIN' : outcome === 1 ? 'LOSE' : 'DRAW');
 
-  if (outcome === 1) { state.score[0]++; setBanner('YOU SCORE!', 'good'); sfx.point(); }
-  else if (outcome === -1) { state.score[1]++; setBanner((state.mode === 'cpu' ? 'CPU' : 'RIVAL') + ' SCORES!', 'bad'); sfx.miss(); }
+  if (outcome === 1) { state.score[0]++; setBanner('YOU WIN!', 'me'); sfx.point(); }
+  else if (outcome === -1) { state.score[1]++; setBanner(rivalLabel() + ' WINS!', 'rival'); sfx.miss(); }
   else { setBanner('DRAW!'); sfx.draw(); }
   renderPips();
 
   const winner = state.score.findIndex((s) => s >= state.target);
-  await sleep(1300);
+  await sleep(2300); // keep the round result on screen
   if (winner !== -1) return endMatch(winner === 0);
   if (state.mode === null || state.over) return; // left mid-animation
   state.round++;
@@ -296,9 +350,15 @@ const net = {
     switch (d.t) {
       case 'start':
         if (TARGETS.includes(d.target)) state.target = d.target;
+        rivalName = cleanName(d.name);
+        this.send({ t: 'name', name: myName });
         this.resetRounds();
         sfx.join();
         startMatch('online');
+        break;
+      case 'name':
+        rivalName = cleanName(d.name);
+        if (state.mode === 'online') renderNames();
         break;
       case 'commit':
         if (typeof d.h !== 'string' || this.commits[d.r]) return;
@@ -335,7 +395,7 @@ const net = {
     conn.on('open', () => {
       if (this.isHost) {
         this.resetRounds();
-        this.send({ t: 'start', target: state.target });
+        this.send({ t: 'start', target: state.target, name: myName });
         sfx.join();
         startMatch('online');
       }
@@ -408,6 +468,7 @@ const net = {
     this.conn = null;
     this.peer = null;
     this.resetRounds();
+    rivalName = '';
   },
 };
 
@@ -464,6 +525,12 @@ $('#btn-target').addEventListener('click', () => {
   store.set('rps-target', state.target);
   $('#btn-target').textContent = state.target;
   sfx.select();
+});
+
+$('#name-input').value = myName;
+$('#name-input').addEventListener('input', (e) => {
+  myName = cleanName(e.target.value);
+  store.set('rps-name', myName);
 });
 
 $('#btn-host').addEventListener('click', () => { sfx.select(); net.host(); });

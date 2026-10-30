@@ -41,6 +41,7 @@
     <section id="s-online" class="scene">
       <h2 class="title2">2P ONLINE</h2>
       <div id="lobby-menu" class="lobby-menu">
+        <input id="name-input" class="name-input" maxlength="10" placeholder="YOUR NAME" autocomplete="nickname" spellcheck="false" aria-label="Your name">
         <button id="btn-host">CREATE ROOM</button>
         <div class="or">- OR -</div>
         <div class="join-row">
@@ -67,9 +68,17 @@
       </header>
 
       <div class="arena">
-        <div class="fighter left" id="f1">❔</div>
+        <div class="slot slot-me">
+          <div class="tag" id="t1">▼ YOU</div>
+          <div class="fighter left" id="f1">❔</div>
+          <div class="stamp" id="st1"></div>
+        </div>
         <div class="vs">VS</div>
-        <div class="fighter right" id="f2">❔</div>
+        <div class="slot slot-rival">
+          <div class="tag" id="t2">▼ CPU</div>
+          <div class="fighter right" id="f2">❔</div>
+          <div class="stamp" id="st2"></div>
+        </div>
       </div>
 
       <div class="banner" id="banner">CHOOSE!</div>

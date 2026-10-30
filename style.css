@@ -195,6 +195,8 @@ input {
 }
 input:focus { outline: none; box-shadow: 0 0 14px var(--yellow); }
 input::placeholder { color: #6b5c2a; }
+.name-input { width: 12em; font-size: 14px; letter-spacing: 2px; color: var(--cyan); border-color: var(--cyan); caret-color: var(--cyan); }
+.name-input::placeholder { color: #1f6b70; }
 .code {
   font-size: clamp(32px, 10vw, 56px);
   letter-spacing: 8px;
@@ -256,9 +258,46 @@ input::placeholder { color: #6b5c2a; }
 .fighter.right.shake > span { animation-name: pump-r; }
 @keyframes pump   { 50% { transform: translateY(-18%) rotate(-10deg); } }
 @keyframes pump-r { 0%, 100% { transform: scaleX(-1); } 50% { transform: scaleX(-1) translateY(-18%) rotate(-10deg); } }
-.fighter.win  { color: var(--green); animation: win .5s steps(2) 3; box-shadow: 6px 6px 0 #000, 0 0 40px var(--green); }
+.fighter.win  { color: var(--green); animation: win .5s steps(2) infinite; box-shadow: 6px 6px 0 #000, 0 0 40px var(--green); }
 @keyframes win { 50% { transform: scale(1.12); } }
-.fighter.lose { color: var(--red); filter: grayscale(.8) brightness(.6); }
+.fighter.lose { color: var(--red); filter: grayscale(.8) brightness(.55); }
+
+/* who is who */
+.slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.tag {
+  font-size: clamp(10px, 2.6vw, 14px);
+  padding: 8px 10px;
+  color: #000;
+  box-shadow: 3px 3px 0 #000;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.slot-me .tag    { background: var(--cyan);  box-shadow: 3px 3px 0 #000, 0 0 14px var(--cyan); }
+.slot-rival .tag { background: var(--pink);  box-shadow: 3px 3px 0 #000, 0 0 14px var(--pink); }
+
+/* round result stamp over the hand */
+.stamp {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  font-size: clamp(14px, 4.5vw, 30px);
+  padding: 6px 10px;
+  border: 4px solid currentColor;
+  background: rgba(0, 0, 0, .8);
+  box-shadow: 4px 4px 0 #000;
+  pointer-events: none;
+  display: none;
+}
+.stamp.show { display: block; animation: stamp .3s steps(3); }
+.stamp.win  { color: var(--green); text-shadow: 0 0 12px var(--green); }
+.stamp.lose { color: var(--red); }
+.stamp.draw { color: var(--yellow); }
+@keyframes stamp {
+  from { transform: translate(-50%, -50%) rotate(-14deg) scale(3); opacity: 0; }
+}
 
 .vs {
   font-size: clamp(18px, 5vw, 40px);
@@ -268,6 +307,7 @@ input::placeholder { color: #6b5c2a; }
 
 .banner {
   min-height: 1.3em;
+  max-width: 100%;
   font-size: clamp(18px, 5.5vw, 42px);
   color: var(--yellow);
   text-shadow: 4px 4px 0 #000, 0 0 18px var(--yellow);
@@ -276,6 +316,8 @@ input::placeholder { color: #6b5c2a; }
 @keyframes pop { from { transform: scale(2); opacity: 0; } }
 .banner.good { color: var(--green); text-shadow: 4px 4px 0 #000, 0 0 18px var(--green); }
 .banner.bad  { color: var(--red);   text-shadow: 4px 4px 0 #000, 0 0 18px var(--red); }
+.banner.me    { color: var(--cyan); text-shadow: 4px 4px 0 #000, 0 0 18px var(--cyan); }
+.banner.rival { color: var(--pink); text-shadow: 4px 4px 0 #000, 0 0 18px var(--pink); }
 .banner.flash { animation: rainbow .4s steps(1) infinite; }
 @keyframes rainbow {
   0%   { color: var(--yellow); }
