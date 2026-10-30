@@ -264,16 +264,29 @@ function endMatch(iWon) {
     setBanner('GAME OVER', 'bad');
     sfx.lose();
   }
-  if (state.mode === 'cpu') {
-    const streak = iWon ? store.get('rps-streak', 0) + 1 : 0;
-    store.set('rps-streak', streak);
-    store.set('rps-best', Math.max(store.get('rps-best', 0), streak));
-    updateHiscore();
-  }
+  recordResult(state.mode, iWon);
+}
+
+/* Your match record, kept per mode: { w, l, streak, best } */
+function getStats(mode) {
+  const old = mode === 'cpu' ? { streak: store.get('rps-streak', 0), best: store.get('rps-best', 0) } : {};
+  return { w: 0, l: 0, streak: 0, best: 0, ...old, ...store.get('rps-stats-' + mode, {}) };
+}
+
+function recordResult(mode, iWon) {
+  const st = getStats(mode);
+  if (iWon) { st.w++; st.streak++; } else { st.l++; st.streak = 0; }
+  st.best = Math.max(st.best, st.streak);
+  store.set('rps-stats-' + mode, st);
+  updateHiscore();
 }
 
 function updateHiscore() {
-  $('#hiscore').textContent = store.get('rps-streak', 0) + ' / BEST ' + store.get('rps-best', 0);
+  const cpu = getStats('cpu');
+  const online = getStats('online');
+  $('#rec-cpu').textContent = cpu.w + 'W - ' + cpu.l + 'L';
+  $('#rec-online').textContent = online.w + 'W - ' + online.l + 'L';
+  $('#rec-streak').textContent = cpu.streak + ' (BEST ' + cpu.best + ')';
 }
 
 function rematch() {
