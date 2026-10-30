@@ -31,7 +31,9 @@
         <button data-go="online">▶ 2P ONLINE</button>
       </nav>
       <div class="settings">
-        FIRST TO <button id="btn-target" class="small">3</button> WINS
+        <span>FIRST TO</span><button id="btn-target" class="small">3</button>
+        <span>GAME</span><button id="btn-variant" class="small">CLASSIC</button>
+        <span>CPU LEVEL</span><button id="btn-level" class="small">NORMAL</button>
       </div>
       <p class="blink">INSERT COIN</p>
       <div class="hi">
@@ -92,13 +94,13 @@
         </div>
       </div>
 
-      <div class="banner" id="banner">CHOOSE!</div>
-
-      <div class="picks" id="picks">
-        <button data-pick="rock"><span class="em">✊</span>ROCK<kbd>1</kbd></button>
-        <button data-pick="paper"><span class="em">✋</span>PAPER<kbd>2</kbd></button>
-        <button data-pick="scissors"><span class="em">✌️</span>SCISSORS<kbd>3</kbd></button>
+      <div class="result">
+        <div class="banner" id="banner">CHOOSE!</div>
+        <div class="verb" id="verb"></div>
       </div>
+
+      <div class="picks" id="picks"></div>
+      <p class="rules" id="rules" hidden><span class="rules-label">EACH BEATS THE NEXT ▸</span><span>✌️▸✋▸✊▸🦎▸🖖▸✌️</span><span>✌️▸🦎▸✋▸🖖▸✊▸✌️</span></p>
 
       <div class="endgame" id="endgame" hidden>
         <button id="btn-rematch">REMATCH</button>
@@ -108,6 +110,6 @@
       <button class="quit" data-go="title" aria-label="Quit to menu">✕</button>
     </section>
   </main>
-  <footer class="marquee"><span>© 2026 RPS ARCADE · KEYS 1/2/3 OR R/P/S · M = MUTE</span></footer>
+  <footer class="marquee"><span>© 2026 RPS ARCADE · KEYS 1-5 OR R/P/S/L/V · M = MUTE</span></footer>
 </body>
 </html>
