@@ -2,7 +2,7 @@
 
 Rock Paper Scissors with an 80s arcade look — neon, CRT scanlines, chiptune sound.
 
-**Play:** https://talinbar87.github.io/game/
+**Play:** https://talinbar87.github.io/Game/
 
 ## Modes
 - **1P VS CPU** — the CPU is mostly random, but sometimes counters your favourite move.
