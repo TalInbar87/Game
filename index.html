@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07021a">
+  <title>RPS Arcade</title>
+  <meta name="description" content="Rock Paper Scissors arcade — play vs CPU or a friend online.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✊</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main class="screen">
+    <button class="mute" id="btn-mute" aria-label="Toggle sound">🔊</button>
+
+    <!-- TITLE -->
+    <section id="s-title" class="scene active">
+      <h1 class="logo">
+        <span class="l1">ROCK</span>
+        <span class="l2">PAPER</span>
+        <span class="l3">SCISSORS</span>
+      </h1>
+      <div class="hands-anim" aria-hidden="true"><span>✊</span><span>✋</span><span>✌️</span></div>
+      <nav class="menu">
+        <button data-go="cpu">▶ 1P VS CPU</button>
+        <button data-go="online">▶ 2P ONLINE</button>
+      </nav>
+      <div class="settings">
+        FIRST TO <button id="btn-target" class="small">3</button> WINS
+      </div>
+      <p class="blink">INSERT COIN</p>
+      <p class="hi">CPU WIN STREAK <span id="hiscore">0</span></p>
+    </section>
+
+    <!-- ONLINE LOBBY -->
+    <section id="s-online" class="scene">
+      <h2 class="title2">2P ONLINE</h2>
+      <div id="lobby-menu" class="lobby-menu">
+        <button id="btn-host">CREATE ROOM</button>
+        <div class="or">- OR -</div>
+        <div class="join-row">
+          <input id="room-input" maxlength="5" placeholder="CODE" autocomplete="off" spellcheck="false" aria-label="Room code">
+          <button id="btn-join">JOIN</button>
+        </div>
+      </div>
+      <div id="lobby-wait" class="lobby-wait" hidden>
+        <p>ROOM CODE</p>
+        <div id="room-code" class="code">-----</div>
+        <button id="btn-copy">COPY INVITE LINK</button>
+        <p class="blink">WAITING FOR PLAYER 2...</p>
+      </div>
+      <p id="online-status" class="status" role="status"></p>
+      <button class="back" data-go="title">◀ BACK</button>
+    </section>
+
+    <!-- GAME -->
+    <section id="s-game" class="scene">
+      <header class="hud">
+        <div class="p p1"><div class="name" id="n1">YOU</div><div class="pips" id="pips1"></div></div>
+        <div class="round">ROUND<br><span id="round">1</span></div>
+        <div class="p p2"><div class="name" id="n2">CPU</div><div class="pips" id="pips2"></div></div>
+      </header>
+
+      <div class="arena">
+        <div class="fighter left" id="f1">❔</div>
+        <div class="vs">VS</div>
+        <div class="fighter right" id="f2">❔</div>
+      </div>
+
+      <div class="banner" id="banner">CHOOSE!</div>
+
+      <div class="picks" id="picks">
+        <button data-pick="rock"><span class="em">✊</span>ROCK<kbd>1</kbd></button>
+        <button data-pick="paper"><span class="em">✋</span>PAPER<kbd>2</kbd></button>
+        <button data-pick="scissors"><span class="em">✌️</span>SCISSORS<kbd>3</kbd></button>
+      </div>
+
+      <div class="endgame" id="endgame" hidden>
+        <button id="btn-rematch">REMATCH</button>
+        <button data-go="title">MENU</button>
+      </div>
+
+      <button class="quit" data-go="title" aria-label="Quit to menu">✕</button>
+    </section>
+  </main>
+  <footer class="marquee"><span>© 2026 RPS ARCADE · KEYS 1/2/3 OR R/P/S · M = MUTE</span></footer>
+</body>
+</html>
